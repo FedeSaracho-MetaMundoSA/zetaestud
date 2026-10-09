@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Experiencia Inmersiva 360° - Hotel de Lujo</title>
+  
+  <!-- A-Frame CDN -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #050608;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Elegant Custom Overlay UI */
+    #overlay-ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .interactive-element {
+      pointer-events: auto;
+    }
+
+    /* Top Bar */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .title-card {
+      background: rgba(5, 6, 8, 0.8);
+      border: 1px border-solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 16px 24px;
+      border-radius: 12px;
+      max-width: 400px;
+    }
+
+    .title-card h1 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .title-card p {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 300;
+      line-height: 1.4;
+      color: #94a3b8;
+    }
+
+    /* Interactive Scene Selector Panel */
+    .scene-selector {
+      display: flex;
+      gap: 10px;
+      background: rgba(5, 6, 8, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 6px;
+      border-radius: 30px;
+    }
+
+    .scene-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .scene-btn.active {
+      background: #06b6d4;
+      color: #050608;
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    }
+
+    .scene-btn:hover:not(.active) {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Navigation Help */
+    .help-tooltip {
+      background: rgba(5, 6, 8, 0.85);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #06b6d4;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      max-width: fit-content;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #06b6d4;
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(6, 182, 212, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+      }
+    }
+
+    /* Info hotspots overlay modal */
+    .hotspot-modal {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(5, 6, 8, 0.9);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 18px;
+      border-radius: 12px;
+      max-width: 320px;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hotspot-modal.active {
+      display: block;
+      transform: translateY(0);
+    }
+
+    .hotspot-modal h3 {
+      margin: 0 0 6px 0;
+      color: #06b6d4;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hotspot-modal p {
+      margin: 0 0 12px 0;
+      color: #e2e8f0;
+      font-size: 11px;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    .hotspot-modal button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+    }
+
+    .hotspot-modal button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    /* Loader */
+    #loader {
+      position: absolute;
+      inset: 0;
+      background: #050608;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(6, 182, 212, 0.1);
+      border-top-color: #06b6d4;
+      border-radius: 50%;
+      animation: spin 1s infinite linear;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+  </style>
+
+  <script>
+    // 1. CUSTOM A-FRAME COMPONENT FOR SMOOTH DAMPING & SCROLL-ZOOM LIMITS (FOV)
+    AFRAME.registerComponent('smooth-controls', {
+      dependencies: ['look-controls'],
+      schema: {
+        damping: { type: 'number', default: 0.08 }, // Damping factor (lower = smoother)
+        minFov: { type: 'number', default: 40 },    // Maximum zoom in
+        maxFov: { type: 'number', default: 95 }     // Maximum zoom out
+      },
+
+      init: function () {
+        this.camera = this.el.getObject3D('camera');
+        this.lookControls = this.el.components['look-controls'];
+        
+        // Target rotation values that we will smoothly interpolate towards
+        this.targetRotation = { x: 0, y: 0 };
+        this.currentRotation = { x: 0, y: 0 };
+        
+        // Bind scroll zoom limit logic
+        this.onWheel = this.onWheel.bind(this);
+        window.addEventListener('wheel', this.onWheel, { passive: false });
+        
+        // For mobile double-tap/pinch-to-zoom limits
+        this.onTouchMove = this.onTouchMove.bind(this);
+        window.addEventListener('touchmove', this.onTouchMove, { passive: false });
+      },
+
+      remove: function () {
+        window.removeEventListener('wheel', this.onWheel);
+        window.removeEventListener('touchmove', this.onTouchMove);
+      },
+
+      onWheel: function (event) {
+        // Prevent default browser scaling/scrolling behavior
+        event.preventDefault();
+        
+        let fov = this.camera.fov || 80;
+        // Sensitivity factor for wheel zoom
+        const zoomSpeed = event.deltaY * 0.05;
+        
+        // Target FOV clamped strictly between limits
+        fov = Math.max(this.data.minFov, Math.min(this.data.maxFov, fov + zoomSpeed));
+        
+        this.camera.fov = fov;
+        this.camera.updateProjectionMatrix();
+      },
+
+      onTouchMove: function (event) {
+        // Prevent default touch gestures to ensure only look-controls handles viewport navigation
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+      },
+
+      tick: function (time, timeDelta) {
+        if (!this.lookControls) return;
+
+        // Custom lerp interpolation logic to smooth out movement:
+        // We override the default target yaw/pitch from look-controls and apply damping.
+        const yawObj = this.lookControls.yawObject;
+        const pitchObj = this.lookControls.pitchObject;
+
+        if (yawObj && pitchObj) {
+          // If the user isn't interacting, smoothly damp current rotation towards target.
+          // In A-Frame, look-controls directly sets yawObj.rotation.y and pitchObj.rotation.x.
+          // To apply smooth damping, we can capture inputs and apply a lerp.
+          // For simplicity, we can let A-Frame look-controls do raw updates, 
+          // but interpolate their rotation values in our custom frame loop.
+          
+          // Let's smooth look-controls behavior directly by lerping the rotation objects:
+          if (!this.initializedRot) {
+            this.targetRotation.y = yawObj.rotation.y;
+            this.targetRotation.x = pitchObj.rotation.x;
+            this.initializedRot = true;
+          }
+
+          // Fetch look-controls current raw output as our target
+          this.targetRotation.y = yawObj.rotation.y;
+          this.targetRotation.x = pitchObj.rotation.x;
+
+          // Interpolate actual rotation towards look-controls target
+          const lerpFactor = this.data.damping;
+          yawObj.rotation.y = yawObj.rotation.y * (1 - lerpFactor) + this.targetRotation.y * lerpFactor;
+          pitchObj.rotation.x = pitchObj.rotation.x * (1 - lerpFactor) + this.targetRotation.x * lerpFactor;
+        }
+      }
+    });
+
+    // Handle hotspot interactions
+    function showHotspotInfo(title, description) {
+      const modal = document.getElementById('hotspot-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalDesc = document.getElementById('modal-description');
+      
+      modalTitle.innerText = title;
+      modalDesc.innerText = description;
+      modal.classList.add('active');
+    }
+
+    function closeHotspotModal() {
+      document.getElementById('hotspot-modal').classList.remove('active');
+    }
+
+    // Switch scenes
+    function switchScene(sceneId) {
+      const panorama = document.getElementById('sky-panorama');
+      const lobbyBtn = document.getElementById('btn-lobby');
+      const suiteBtn = document.getElementById('btn-suite');
+      const roofBtn = document.getElementById('btn-rooftop');
+      
+      // Remove active states from buttons
+      [lobbyBtn, suiteBtn, roofBtn].forEach(btn => btn.classList.remove('active'));
+
+      // Clean active hotspots and modal
+      closeHotspotModal();
+      
+      // Hide current hotspot entities
+      document.querySelectorAll('.hotspot-group').forEach(group => {
+        group.setAttribute('visible', 'false');
+      });
+
+      let imageUrl = '';
+      let activeBtn = null;
+      let activeHotspotGroup = null;
+
+      if (sceneId === 'lobby') {
+        // High-quality equirectangular source
+        imageUrl = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=8192&q=85';
+        activeBtn = lobbyBtn;
+        activeHotspotGroup = document.getElementById('hotspots-lobby');
+      } else if (sceneId === 'suite') {
+        imageUrl = 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=8192&q=85';
+        activeBtn = suiteBtn;
+        activeHotspotGroup = document.getElementById('hotspots-suite');
+      } else if (sceneId === 'rooftop') {
+        imageUrl = 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=8192&q=85';
+        activeBtn = roofBtn;
+        activeHotspotGroup = document.getElementById('hotspots-rooftop');
+      }
+
+      // Apply button active highlight
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Set asset with high-resolution texture optimizations
+      if (panorama) {
+        document.getElementById('loader').style.opacity = '1';
+        document.getElementById('loader').style.pointerEvents = 'auto';
+
+        // Listen for new asset loading complete
+        panorama.setAttribute('src', imageUrl);
+        
+        // Wait momentarily for rendering cycle
+        setTimeout(() => {
+          document.getElementById('loader').style.opacity = '0';
+          document.getElementById('loader').style.pointerEvents = 'none';
+          
+          if (activeHotspotGroup) {
+            activeHotspotGroup.setAttribute('visible', 'true');
+          }
+        }, 800);
+      }
+    }
+
+    // Hide loader once initial assets compile
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loader').style.opacity = '0';
+        document.getElementById('loader').style.pointerEvents = 'none';
+      }, 1200);
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Loading Animation Cover -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <div class="loader-text">Cargando Texturas 8K...</div>
+  </div>
+
+  <!-- UI Controls Overlay -->
+  <div id="overlay-ui">
+    <!-- Header info and scene selector -->
+    <div class="header-bar">
+      <div></div> <!-- Left space placeholder -->
+
+      <div class="scene-selector interactive-element">
+        <button id="btn-lobby" class="scene-btn active" onclick="switchScene('lobby')">Lobby</button>
+        <button id="btn-suite" class="scene-btn" onclick="switchScene('suite')">Suite 36</button>
+        <button id="btn-rooftop" class="scene-btn" onclick="switchScene('rooftop')">Rooftop Lounge</button>
+      </div>
+    </div>
+
+    <!-- Bottom Tooltip and Dynamic Info Modals -->
+    <div class="header-bar" style="align-items: flex-end; justify-content: flex-end;">
+      <!-- Hotspot details drawer -->
+      <div id="hotspot-modal" class="hotspot-modal interactive-element">
+        <h3 id="modal-title">Lámparas de Cristal</h3>
+        <p id="modal-description">Luminarias colgantes sopladas a mano con filamentos LED cálidos regulables de alta gama.</p>
+        <button onclick="closeHotspotModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- A-Frame 3D Scene Graph -->
+  <a-scene 
+    loading-screen="enabled: false"
+    vr-mode-ui="enabled: true"
+    device-orientation-permission-ui="enabled: true"
+  >
+    <!-- Asset pipeline optimized for high density textures -->
+    <a-assets>
+      <img 
+        id="lobby-img" 
+        src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=8192&q=85" 
+        crossorigin="anonymous"
+      >
+    </a-assets>
+
+    <!-- Main Panoramic Sphere -->
+    <a-sky 
+      id="sky-panorama" 
+      src="#lobby-img" 
+      rotation="0 -90 0"
+      phi-length="360"
+      geometry="phiLength: 360; radius: 5000"
+      material="shader: flat; npot: true; color: #ffffff;"
+    ></a-sky>
+
+    <!-- Camera setup with Look Controls, Smooth Damping component, and FOV constraints -->
+    <a-entity 
+      camera="active: true; fov: 80;" 
+      look-controls="pointerLockEnabled: false; reverseMouseDrag: false;"
+      smooth-controls="damping: 0.12; minFov: 40; maxFov: 95;"
+      position="0 0 0"
+    ></a-entity>
+
+    <!-- INTERACTIVE HOTSPOTS -->
+    <!-- Lobby Hotspots -->
+    <a-entity id="hotspots-lobby" class="hotspot-group" visible="true">
+      <!-- Hotspot 1: Recepción de Mármol -->
+      <a-entity 
+        position="-12 1 -25"
+        geometry="primitive: ring; radiusInner: 0.5; radiusOuter: 0.8"
+        material="color: #06b6d4; shader: flat; side: double; opacity: 0.8"
+        class="interactive-element"
+        onclick="showHotspotInfo('Recepción de Mármol', 'Bloque esculpido en una sola pieza de Mármol Calacatta con pulido de alto brillo y retroiluminación integrada.')"
+      >
+        <a-entity 
+          geometry="primitive: circle; radius: 0.4"
+          material="color: #ffffff; shader: flat; opacity: 0.9"
+        ></a-entity>
+      </a-entity>
+
+      <!-- Hotspot 2: Luminaria de diseño -->
+      <a-entity 
+        position="10 12 -18"
+        geometry="primitive: ring; radiusInner: 0.5; radiusOuter: 0.8"
+        material="color: #06b6d4; shader: flat; side: double; opacity: 0.8"
+        class="interactive-element"
+        onclick="showHotspotInfo('Lámparas de Cristal', 'Luminarias esculturales colgantes sopladas artesanalmente con filamentos LED regulables de temperatura ultra-cálida.')"
+      >
+        <a-entity 
+          geometry="primitive: circle; radius: 0.4"
+          material="color: #ffffff; shader: flat; opacity: 0.9"
+        ></a-entity>
+      </a-entity>
+
+      <!-- Hotspot 3: Mobiliario Lounge -->
+      <a-entity 
+        position="22 -2 -14"
+        geometry="primitive: ring; radiusInner: 0.5; radiusOuter: 0.8"
+        material="color: #06b6d4; shader: flat; side: double; opacity: 0.8"
+        class="interactive-element"
+        onclick="showHotspotInfo('Área de Lounge Residencial', 'Mobiliario europeo seleccionado de autor, tapizado en cuero natural curtido y maderas nobles enceradas a mano.')"
+      >
+        <a-entity 
+          geometry="primitive: circle; radius: 0.4"
+          material="color: #ffffff; shader: flat; opacity: 0.9"
+        ></a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- Suite 36 Hotspots -->
+    <a-entity id="hotspots-suite" class="hotspot-group" visible="false">
+      <!-- Hotspot 1: Cama Premium -->
+      <a-entity 
+        position="-18 0 -18"
+        geometry="primitive: ring; radiusInner: 0.5; radiusOuter: 0.8"
+        material="color: #06b6d4; shader: flat; side: double; opacity: 0.8"
+        class="interactive-element"
+        onclick="showHotspotInfo('Suite Principal King', 'Sommier de manufactura artesanal con textiles importados 100% lino e hilados de algodón de 600 hilos.')"
+      >
+        <a-entity 
+          geometry="primitive: circle; radius: 0.4"
+          material="color: #ffffff; shader: flat; opacity: 0.9"
+        ></a-entity>
+      </a-entity>
+
+      <!-- Hotspot 2: Ventanal panorámico -->
+      <a-entity 
+        position="5 3 -25"
+        geometry="primitive: ring; radiusInner: 0.5; radiusOuter: 0.8"
+        material="color: #06b6d4; shader: flat; side: double; opacity: 0.8"
+        class="interactive-element"
+        onclick="showHotspotInfo('Ventanales Termoacústicos', 'Cerramientos continuos de piso a techo con doble vidriado hermético y filtro contra radiación ultravioleta.')"
+      >
+        <a-entity 
+          geometry="primitive: circle; radius: 0.4"
+          material="color: #ffffff; shader: flat; opacity: 0.9"
+        ></a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- Rooftop Hotspots -->
+    <a-entity id="hotspots-rooftop" class="hotspot-group" visible="false">
+      <!-- Hotspot 1: Piscina -->
+      <a-entity 
+        position="-25 -4 -10"
+        geometry="primitive: ring; radiusInner: 0.5; radiusOuter: 0.8"
+        material="color: #06b6d4; shader: flat; side: double; opacity: 0.8"
+        class="interactive-element"
+        onclick="showHotspotInfo('Piscina de Borde Infinito', 'Espejo de agua climatizado con revestimiento de piedra natural volcánica y desborde sin límites hacia el horizonte.')"
+      >
+        <a-entity 
+          geometry="primitive: circle; radius: 0.4"
+          material="color: #ffffff; shader: flat; opacity: 0.9"
+        ></a-entity>
+      </a-entity>
+
+      <!-- Hotspot 2: Fogón -->
+      <a-entity 
+        position="14 -3 -20"
+        geometry="primitive: ring; radiusInner: 0.5; radiusOuter: 0.8"
+        material="color: #06b6d4; shader: flat; side: double; opacity: 0.8"
+        class="interactive-element"
+        onclick="showHotspotInfo('Sectores de Fogones', 'Islas circulares de estar con quemadores empotrados de bioetanol y tapicería náutica impermeable.')"
+      >
+        <a-entity 
+          geometry="primitive: circle; radius: 0.4"
+          material="color: #ffffff; shader: flat; opacity: 0.9"
+        ></a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- Lighting optimizations -->
+    <a-entity light="type: ambient; color: #ffffff; intensity: 1.0"></a-entity>
+  </a-scene>
+
+</body>
+</html>

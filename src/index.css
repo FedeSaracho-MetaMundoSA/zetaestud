@@ -1,0 +1,239 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-spin-slow: spin 12s linear infinite;
+}
+
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scrollDown {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes growWidth {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@utility animate-scroll-up {
+  animation: scrollUp 45s linear infinite;
+}
+
+@utility animate-scroll-down {
+  animation: scrollDown 45s linear infinite;
+}
+
+@utility bg-radial-vignette {
+  background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.88) 100%);
+}
+
+@utility bg-scanner-grid {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Custom Scrollbars for minimalist aesthetic */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #05060b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1c1d24;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00f3ff;
+}
+
+/* DBOX STYLE INCLINED MULTI-SCREEN REEL CLASSICALS */
+.dbox-bg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #050505;
+  z-index: 0;
+}
+
+.dbox-grid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  width: 180%;
+  height: 180%;
+  position: absolute;
+  top: -40%;
+  left: -40%;
+  transform: rotate(-12deg) skewX(-5deg); 
+  will-change: transform;
+}
+
+@keyframes marquee-left {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marquee-right {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.marquee-row {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.marquee-row-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  gap: 20px;
+}
+
+.marquee-row-track.slide-left {
+  animation: marquee-left 45s linear infinite;
+}
+
+.marquee-row-track.slide-right {
+  animation: marquee-right 45s linear infinite;
+}
+
+.marquee-img-card {
+  width: 380px;
+  height: 250px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  position: relative;
+  background-color: #010204;
+}
+
+.marquee-img-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), filter 0.6s ease;
+  filter: brightness(0.65);
+}
+
+.marquee-img-card:hover img {
+  transform: scale(1.06);
+  filter: brightness(0.95);
+}
+
+/* Vertical Focused Spotlight beam for basalt pillars */
+.bg-radial-spotlight {
+  background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.18) 0%, rgba(6, 182, 212, 0.08) 40%, transparent 75%);
+}
+
+/* SliderCinematico Styles - Estética dbox Oscura */
+.cine-slider-container {
+  overflow: hidden;
+  width: 100vw;
+  background-color: #010204; /* Dark theme black */
+  padding: 60px 0;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.cine-slider-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  /* Forzamos el renderizado 3D para evitar tirones de CPU */
+  transform: translate3d(0, 0, 0); 
+}
+
+.cine-slider-item {
+  width: 420px; /* Tamaño ideal para renderizado horizontal */
+  height: 280px;
+  margin: 0 15px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Efecto de escala premium al pasar el mouse por el proyecto */
+.cine-slider-item:hover {
+  transform: scale(1.04);
+}
+
+.cine-slider-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.5s ease;
+}
+
+.cine-slider-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(1, 2, 4, 0.9) 0%, rgba(1, 2, 4, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  align-items: flex-end;
+}
+
+.cine-slider-item:hover .cine-slider-overlay {
+  opacity: 1;
+}
+
+.cine-slider-overlay h3 {
+  color: #FAFAFA;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0;
+}
+
+

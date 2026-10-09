@@ -1,0 +1,6 @@
+{
+  "name": "Zeta Estudio",
+  "description": "Plataforma premium de visualización arquitectónica, renders 4K y animaciones cinematográficas con drones.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

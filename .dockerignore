@@ -1,0 +1,10 @@
+.git
+.gitignore
+.gcloudignore
+node_modules
+dist
+build
+.env
+.env.local
+*.log
+.aistudio
